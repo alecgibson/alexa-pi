@@ -14,7 +14,7 @@ initialise();
 
 function initialise() {
     setUpWebServer();
-    // connectToTv();
+    connectToTv();
 }
 
 function setUpWebServer() {
@@ -33,21 +33,12 @@ function definePaths() {
         response.send('Hello, world!');
     });
 
-    server.get(TV_BASE_PATH, function(request, response) {
-       console.log("GET");
-       response.send('');
-    });
-
-    server.put(TV_BASE_PATH, function(request, response) {
-       console.log("PUT");
-       response.send('');
-    });
-
     server.post(TV_BASE_PATH, function (request, response) {
-        console.log("POST");
        console.log(request);
        console.log(request.body);
-       response.send(request.body);
+       mute();
+       // TODO
+       response.send('');
     });
 
     // server.get(TV_BASE_PATH + '/turn-off', turnOff);
@@ -146,10 +137,9 @@ function clearText(request, response) {
     response.send('');
 }
 
-function mute(request, response) {
+function mute() {
     console.log('Mute');
     tv.request('ssap://audio/setMute', {mute:true});
-    response.send('');
 }
 
 function unmute(request, response) {
