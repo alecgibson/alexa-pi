@@ -33,7 +33,18 @@ function definePaths() {
         response.send('Hello, world!');
     });
 
+    server.get(TV_BASE_PATH, function(request, response) {
+       console.log("GET");
+       response.send('');
+    });
+
+    server.put(TV_BASE_PATH, function(request, response) {
+       console.log("PUT");
+       response.send('');
+    });
+
     server.post(TV_BASE_PATH, function (request, response) {
+        console.log("POST");
        console.log(request);
        console.log(request.body);
        response.send(request.body);
