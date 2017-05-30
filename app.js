@@ -1,4 +1,5 @@
 var express = require('express');
+var bodyParser = require('body-parser');
 var server = express();
 var tv;
 
@@ -17,6 +18,8 @@ function initialise() {
 }
 
 function setUpWebServer() {
+    server.use(bodyParser.json());
+
     definePaths();
 
     server.listen(PORT, function() {
@@ -30,22 +33,28 @@ function definePaths() {
         response.send('Hello, world!');
     });
 
-    server.get(TV_BASE_PATH + '/turn-off', turnOff);
-    server.get(TV_BASE_PATH + '/app/:appName', launchApp);
-    server.get(TV_BASE_PATH + '/enter', enterKey);
-    server.get(TV_BASE_PATH + '/text/:text', enterText);
-    server.get(TV_BASE_PATH + '/clear-text', clearText);
+    server.post(TV_BASE_PATH, function (request, response) {
+       console.log(request);
+       console.log(request.body);
+       response.send(request.body);
+    });
 
-    server.get(TV_BASE_PATH + '/mute', mute);
-    server.get(TV_BASE_PATH + '/unmute', unmute);
-    server.get(TV_BASE_PATH + '/volume/:volume', setVolume);
-    server.get(TV_BASE_PATH + '/volume-change/:change', volumeChange);
-
-    server.get(TV_BASE_PATH + '/play', play);
-    server.get(TV_BASE_PATH + '/pause', pause);
-    server.get(TV_BASE_PATH + '/stop', stop);
-    server.get(TV_BASE_PATH + '/rewind', rewind);
-    server.get(TV_BASE_PATH + '/fast-forward', fastForward);
+    // server.get(TV_BASE_PATH + '/turn-off', turnOff);
+    // server.get(TV_BASE_PATH + '/app/:appName', launchApp);
+    // server.get(TV_BASE_PATH + '/enter', enterKey);
+    // server.get(TV_BASE_PATH + '/text/:text', enterText);
+    // server.get(TV_BASE_PATH + '/clear-text', clearText);
+    //
+    // server.get(TV_BASE_PATH + '/mute', mute);
+    // server.get(TV_BASE_PATH + '/unmute', unmute);
+    // server.get(TV_BASE_PATH + '/volume/:volume', setVolume);
+    // server.get(TV_BASE_PATH + '/volume-change/:change', volumeChange);
+    //
+    // server.get(TV_BASE_PATH + '/play', play);
+    // server.get(TV_BASE_PATH + '/pause', pause);
+    // server.get(TV_BASE_PATH + '/stop', stop);
+    // server.get(TV_BASE_PATH + '/rewind', rewind);
+    // server.get(TV_BASE_PATH + '/fast-forward', fastForward);
 }
 
 function connectToTv() {
