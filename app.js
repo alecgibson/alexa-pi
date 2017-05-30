@@ -14,7 +14,7 @@ initialise();
 
 function initialise() {
     setUpWebServer();
-    connectToTv();
+    // connectToTv();
 }
 
 function setUpWebServer() {
@@ -58,6 +58,7 @@ function definePaths() {
 }
 
 function connectToTv() {
+    // TODO: Handle not finding the TV (eg try to re-connect when issuing commands)
     tv = require('lgtv2')({
         url: 'ws://192.168.1.107:3000'
     });
