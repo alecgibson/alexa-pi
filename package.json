@@ -1,0 +1,24 @@
+{
+  "name": "alexa-pi",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alecgibson/alexa-pi.git"
+  },
+  "author": "Alec Gibson",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/alecgibson/alexa-pi/issues"
+  },
+  "homepage": "https://github.com/alecgibson/alexa-pi#readme",
+  "dependencies": {
+    "express": "^4.15.3",
+    "lgtv2": "^1.3.0"
+  }
+}
