@@ -30,18 +30,60 @@ function setUpWebServer() {
 }
 
 function definePaths() {
-    server.get('/', function(request, response) {
-        console.log("Hit home");
-        response.send('Hello, world!');
+    server.get('/health', function(request, response) {
+        console.log("Health Check");
+        response.send('OK');
     });
 
     server.post(TV_BASE_PATH, function (request, response) {
-       var alexaResponse = launchApp('youtube');
-       // TODO
-       response.send({
+        var intent = (request && request.request && request.request.intent) || {};
+        var intentName = intent.name || '';
+
+        var alexaResponse;
+        switch (intentName.toLowerCase()) {
+            case 'fastforward':
+                alexaResponse = fastForward();
+                break;
+            case 'launch':
+                alexaResponse = launchApp(intent);
+                break;
+            case 'mute':
+                alexaResponse = mute();
+                break;
+            case 'pause':
+                alexaResponse = pause();
+                break;
+            case 'play':
+                alexaResponse = play();
+                break;
+            case 'rewind':
+                alexaResponse = rewind();
+                break;
+            case 'setvolume':
+                alexaResponse = setVolume(intent);
+                break;
+            case 'turnoff':
+                alexaResponse = turnOff();
+                break;
+            case 'unmute':
+                alexaResponse = unmute();
+                break;
+            case 'volumedown':
+                alexaResponse = volumeChange(-5);
+                break;
+            case 'volumeup':
+                alexaResponse = volumeChange(+5);
+                break;
+            default:
+                alexaResponse = alexaOutputSpeech(
+                    "I didn't recognise that command."
+                );
+        }
+
+        response.send({
            version: '1.0.0',
            response: alexaResponse || {}
-       });
+        });
     });
 }
 
@@ -67,7 +109,9 @@ function tvRequest(uri, payload, callback) {
     if (tvIsConnected) {
         tv.request(uri, payload, callback);
     } else {
-        return alexaSimpleCard('Could not connect to the TV');
+        return alexaOutputSpeech(
+            "I can't connect to the TV."
+        );
     }
 }
 
@@ -81,23 +125,33 @@ function alexaSimpleCard(content) {
     };
 }
 
-function turnOff(request, response) {
-    tv.request('ssap://system/turnOff', function() {
-        tv.disconnect();
-    });
-    response.send('');
+function alexaOutputSpeech(text) {
+    return {
+        outputSpeech: {
+            type: 'PlainText',
+            text: text
+        }
+    };
 }
 
-function launchApp(appName) {
+function turnOff() {
+    tvRequest('ssap://system/turnOff', function() {
+        tv.disconnect();
+    });
+}
+
+function launchApp(intent) {
+    var appName = slotValue(intent, 'AppToLaunch') || '';
+
     var id = null;
-    switch (appName) {
-        case 'live-tv':
+    switch (appName.toLowerCase()) {
+        case 'live tv':
             id = 'com.webos.app.livetv';
             break;
-        case 'tv-guide':
+        case 'tv guide':
             id = 'com.webos.app.tvguide';
             break;
-        case 'iplayer':
+        case 'i player':
             id = 'bbc';
             break;
         case 'netflix':
@@ -106,16 +160,16 @@ function launchApp(appName) {
         case 'amazon':
             id = 'lovefilm';
             break;
-        case 'demand5':
+        case 'demand 5':
             id = 'demand5';
             break;
-        case 'nowtv':
+        case 'now tv':
             id = 'now.tv';
             break;
         case 'youtube':
             id = 'youtube.leanback.v4';
             break;
-        case 'google-play':
+        case 'google play':
             id = 'googleplaymovieswebos';
             break;
     }
@@ -123,83 +177,77 @@ function launchApp(appName) {
     if (id) {
         return tvRequest('ssap://system.launcher/launch', {id: id});
     } else {
-        return alexaSimpleCard('Did not recognise the app ' + appName);
+        return alexaOutputSpeech("I couldn't find that app.");
     }
 }
 
 function enterKey(request, response) {
     tv.request('ssap://com.webos.service.ime/sendEnterKey');
-    response.send('');
 }
 
 function enterText(request, response) {
     var text = request.params.text;
-    console.log("Input text " + text);
     tv.request('ssap://com.webos.service.ime/insertText', {text: text});
-    response.send('');
 }
 
 function clearText(request, response) {
     for (var i=0; i < 100; i++) {
         tv.request('ssap://com.webos.service.ime/deleteCharacters', {count: 1});
     }
-    response.send('');
 }
 
 function mute() {
-    console.log('Mute');
-    tv.request('ssap://audio/setMute', {mute:true});
+    return tvRequest('ssap://audio/setMute', {mute: true});
 }
 
-function unmute(request, response) {
-    console.log('Unmute');
-    tv.request('ssap://audio/setMute', {mute: false});
-    response.send('');
+function unmute() {
+    return tvRequest('ssap://audio/setMute', {mute: false});
 }
 
-function setVolume(request, response) {
-    var volume = parseInt(request.params.volume);
-    console.log("Set volume " + volume);
-    tv.request('ssap://audio/setVolume', {volume: volume});
-    response.send('');
+function setVolume(intent) {
+    var volume = parseInt(slotValue(intent, 'Volume'));
+    return tvRequest('ssap://audio/setVolume', {volume: volume});
 }
 
-function volumeChange(request, response) {
-    var change = parseInt(request.params.change);
-    console.log("Change volume " + change);
+function volumeChange(change) {
+    var response;
+
     if (change >= 0) {
         for (var i=0; i < change; i++) {
-            tv.request('ssap://audio/volumeUp');
+            response = tv.request('ssap://audio/volumeUp');
         }
     } else {
         for (var i=change; i < 0; i++) {
-            tv.request('ssap://audio/volumeDown');
+            response = tv.request('ssap://audio/volumeDown');
         }
     }
-    response.send('');
+
+    return response;
 }
 
-function play(request, response) {
-    tv.request('ssap://media.controls/play');
-    response.send('');
+function play() {
+    return tvRequest('ssap://media.controls/play');
 }
 
-function pause(request, response) {
-    tv.request('ssap://media.controls/pause');
-    response.send('');
+function pause() {
+    return tvRequest('ssap://media.controls/pause');
 }
 
-function stop(request, response) {
-    tv.request('ssap://media.controls/stop');
-    response.send('');
+function stop() {
+    return tvRequest('ssap://media.controls/stop');
 }
 
-function rewind(request, response) {
-    tv.request('ssap://media.controls/rewind');
-    response.send('');
+function rewind() {
+    return tvRequest('ssap://media.controls/rewind');
 }
 
-function fastForward(request, response) {
-    tv.request('ssap://media.controls/fastForward');
-    response.send('');
+function fastForward() {
+    return tvRequest('ssap://media.controls/fastForward');
+}
+
+function slotValue(intent, slotName) {
+    intent = intent || {};
+    var slots = intent.slots || {};
+    var slot = slots[slotName] || {};
+    return slot.value;
 }
