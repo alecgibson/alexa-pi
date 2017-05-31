@@ -1,7 +1,9 @@
 var express = require('express');
 var bodyParser = require('body-parser');
+var lgtv = require('lgtv2');
 var server = express();
 var tv;
+var tvIsConnected;
 
 var PORT = 8080;
 var TV_BASE_PATH = '/api/alexa/tv';
@@ -14,7 +16,7 @@ initialise();
 
 function initialise() {
     setUpWebServer();
-    connectToTv();
+    setUpTv();
 }
 
 function setUpWebServer() {
@@ -34,40 +36,36 @@ function definePaths() {
     });
 
     server.post(TV_BASE_PATH, function (request, response) {
-       console.log(request);
-       console.log(request.body);
-       mute();
+       launchApp('youtube');
        // TODO
        response.send('');
     });
-
-    // server.get(TV_BASE_PATH + '/turn-off', turnOff);
-    // server.get(TV_BASE_PATH + '/app/:appName', launchApp);
-    // server.get(TV_BASE_PATH + '/enter', enterKey);
-    // server.get(TV_BASE_PATH + '/text/:text', enterText);
-    // server.get(TV_BASE_PATH + '/clear-text', clearText);
-    //
-    // server.get(TV_BASE_PATH + '/mute', mute);
-    // server.get(TV_BASE_PATH + '/unmute', unmute);
-    // server.get(TV_BASE_PATH + '/volume/:volume', setVolume);
-    // server.get(TV_BASE_PATH + '/volume-change/:change', volumeChange);
-    //
-    // server.get(TV_BASE_PATH + '/play', play);
-    // server.get(TV_BASE_PATH + '/pause', pause);
-    // server.get(TV_BASE_PATH + '/stop', stop);
-    // server.get(TV_BASE_PATH + '/rewind', rewind);
-    // server.get(TV_BASE_PATH + '/fast-forward', fastForward);
 }
 
-function connectToTv() {
-    // TODO: Handle not finding the TV (eg try to re-connect when issuing commands)
-    tv = require('lgtv2')({
-        url: 'ws://192.168.1.107:3000'
+function setUpTv() {
+    tv = lgtv({
+        url: 'ws://192.168.1.107:3000',
+        timeout: 2000,
+        reconnect: 5000
     });
 
-    tv.on('connect', function() {
-        console.log('Connected to TV');
+    tv.on('connect', function () {
+        console.log("TV Connected");
+        tvIsConnected = true;
     });
+
+    tv.on('error', function (e) {
+        console.log("TV Error: " + e);
+        tvIsConnected = false;
+    });
+}
+
+function tvRequest(uri, payload, callback) {
+    if (tvIsConnected) {
+        tv.request(uri, payload, callback);
+    } else {
+        // TODO: Send message to user
+    }
 }
 
 function turnOff(request, response) {
@@ -77,9 +75,7 @@ function turnOff(request, response) {
     response.send('');
 }
 
-function launchApp(request, response) {
-    var appName = request.params.appName;
-    console.log("Launch app " + appName);
+function launchApp(appName) {
     var id = null;
     switch (appName) {
         case 'live-tv':
@@ -112,10 +108,8 @@ function launchApp(request, response) {
     }
 
     if (id) {
-        tv.request('ssap://system.launcher/launch', {id: id});
+        tvRequest('ssap://system.launcher/launch', {id: id});
     }
-
-    response.send('');
 }
 
 function enterKey(request, response) {
