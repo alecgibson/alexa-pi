@@ -36,7 +36,7 @@ function definePaths() {
     });
 
     server.post(TV_BASE_PATH, function (request, response) {
-        var intent = (request.body && request.request && request.request.intent) || {};
+        var intent = (request.body && request.body.request && request.body.request.intent) || {};s
         var intentName = intent.name || '';
 
         var alexaResponse;
