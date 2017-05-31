@@ -36,16 +36,19 @@ function definePaths() {
     });
 
     server.post(TV_BASE_PATH, function (request, response) {
-       launchApp('youtube');
+       var alexaResponse = launchApp('youtube');
        // TODO
-       response.send('');
+       response.send({
+           version: '1.0.0',
+           response: alexaResponse || {}
+       });
     });
 }
 
 function setUpTv() {
     tv = lgtv({
         url: 'ws://192.168.1.107:3000',
-        timeout: 2000,
+        timeout: 500,
         reconnect: 5000
     });
 
@@ -64,8 +67,18 @@ function tvRequest(uri, payload, callback) {
     if (tvIsConnected) {
         tv.request(uri, payload, callback);
     } else {
-        // TODO: Send message to user
+        return alexaSimpleCard('Could not connect to the TV');
     }
+}
+
+function alexaSimpleCard(content) {
+    return {
+        card: {
+            type: 'Simple',
+            title: 'LG TV',
+            content: content
+        }
+    };
 }
 
 function turnOff(request, response) {
@@ -108,7 +121,9 @@ function launchApp(appName) {
     }
 
     if (id) {
-        tvRequest('ssap://system.launcher/launch', {id: id});
+        return tvRequest('ssap://system.launcher/launch', {id: id});
+    } else {
+        return alexaSimpleCard('Did not recognise the app ' + appName);
     }
 }
 
