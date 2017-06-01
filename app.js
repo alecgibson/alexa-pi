@@ -1,9 +1,13 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 var lgtv = require('lgtv2');
+var hs100Api = require('hs100-api');
+var smartPlugs = new hs100Api.Client();
 var server = express();
+
 var tv;
 var tvIsConnected;
+var tvAndLightsAreLinked;
 
 var PORT = 8080;
 var TV_BASE_PATH = '/api/alexa/tv';
@@ -47,6 +51,9 @@ function definePaths() {
             case 'launch':
                 alexaResponse = launchApp(intent);
                 break;
+            case 'linktvandlights':
+                alexaResponse = linkTvAndLights(true);
+                break;
             case 'mute':
                 alexaResponse = mute();
                 break;
@@ -64,6 +71,9 @@ function definePaths() {
                 break;
             case 'turnoff':
                 alexaResponse = turnOff();
+                break;
+            case 'unlinktvandlights':
+                alexaResponse = linkTvAndLights(false);
                 break;
             case 'unmute':
                 alexaResponse = unmute();
@@ -226,10 +236,16 @@ function volumeChange(change) {
 }
 
 function play() {
+    if (tvAndLightsAreLinked) {
+        turnOnLights(false);
+    }
     return tvRequest('ssap://media.controls/play');
 }
 
 function pause() {
+    if (tvAndLightsAreLinked) {
+        turnOnLights(true);
+    }
     return tvRequest('ssap://media.controls/pause');
 }
 
@@ -243,6 +259,23 @@ function rewind() {
 
 function fastForward() {
     return tvRequest('ssap://media.controls/fastForward');
+}
+
+function linkTvAndLights(shouldLink) {
+    tvAndLightsAreLinked = shouldLink;
+    var message = tvAndLightsAreLinked
+        ? 'Cinema mode enabled'
+        : 'Cinema mode disabled';
+    return alexaOutputSpeech(message);
+}
+
+function turnOnLights(shouldTurnOn) {
+    [
+        // TODO
+    ].forEach(function (ip) {
+        var light = smartPlugs.getPlug({host: ip});
+        light.setPowerState(shouldTurnOn);
+    });
 }
 
 function slotValue(intent, slotName) {

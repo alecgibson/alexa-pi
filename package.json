@@ -20,6 +20,7 @@
   "dependencies": {
     "express": "^4.15.3",
     "body-parser": "^1.17.2",
-    "lgtv2": "^1.3.0"
+    "lgtv2": "^1.3.0",
+    "hs100-api": "^0.4.0"
   }
 }
