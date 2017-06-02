@@ -236,17 +236,19 @@ function volumeChange(change) {
 }
 
 function play() {
-    if (tvAndLightsAreLinked) {
+    var tvResponse = tvRequest('ssap://media.controls/play');
+    if (tvAndLightsAreLinked && !tvResponse) {
         turnOnLights(false);
     }
-    return tvRequest('ssap://media.controls/play');
+    return tvResponse;
 }
 
 function pause() {
-    if (tvAndLightsAreLinked) {
+    var tvResponse = tvRequest('ssap://media.controls/pause');
+    if (tvAndLightsAreLinked && !tvResponse) {
         turnOnLights(true);
     }
-    return tvRequest('ssap://media.controls/pause');
+    return tvResponse;
 }
 
 function stop() {
@@ -271,7 +273,9 @@ function linkTvAndLights(shouldLink) {
 
 function turnOnLights(shouldTurnOn) {
     [
-        // TODO
+        '192.168.1.100',
+        '192.168.1.101',
+        '192.168.1.102'
     ].forEach(function (ip) {
         var light = smartPlugs.getPlug({host: ip});
         light.setPowerState(shouldTurnOn);
