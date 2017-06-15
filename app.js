@@ -99,7 +99,7 @@ function definePaths() {
 
 function setUpTv() {
     tv = lgtv({
-        url: 'ws://192.168.1.107:3000',
+        url: 'ws://192.168.1.106:3000',
         timeout: 500,
         reconnect: 5000
     });
