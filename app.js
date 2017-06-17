@@ -58,8 +58,8 @@ function definePaths() {
                 alexaResponse = mute();
                 break;
             case 'ok':
-            	alexaResponse = enterKey();
-            	break;
+              	alexaResponse = enterKey();
+              	break;
             case 'pause':
                 alexaResponse = pause();
                 break;
@@ -70,8 +70,8 @@ function definePaths() {
                 alexaResponse = rewind();
                 break;
             case 'sendtext':
-            	alexaResponse = enterText(intent);
-            	break;
+              	alexaResponse = enterText(intent);
+              	break;
             case 'setvolume':
                 alexaResponse = setVolume(intent);
                 break;
