@@ -57,9 +57,9 @@ function definePaths() {
             case 'mute':
                 alexaResponse = mute();
                 break;
-			case 'ok':
-				alexaResponse = enterKey();
-				break;
+            case 'ok':
+            	alexaResponse = enterKey();
+            	break;
             case 'pause':
                 alexaResponse = pause();
                 break;
@@ -69,9 +69,9 @@ function definePaths() {
             case 'rewind':
                 alexaResponse = rewind();
                 break;
-			case 'sendtext':
-				alexaResponse = enterText(intent);
-				break;
+            case 'sendtext':
+            	alexaResponse = enterText(intent);
+            	break;
             case 'setvolume':
                 alexaResponse = setVolume(intent);
                 break;
