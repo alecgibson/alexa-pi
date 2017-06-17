@@ -57,6 +57,9 @@ function definePaths() {
             case 'mute':
                 alexaResponse = mute();
                 break;
+			case 'ok':
+				alexaResponse = enterKey();
+				break;
             case 'pause':
                 alexaResponse = pause();
                 break;
@@ -66,6 +69,9 @@ function definePaths() {
             case 'rewind':
                 alexaResponse = rewind();
                 break;
+			case 'sendtext':
+				alexaResponse = enterText(intent);
+				break;
             case 'setvolume':
                 alexaResponse = setVolume(intent);
                 break;
@@ -191,16 +197,16 @@ function launchApp(intent) {
     }
 }
 
-function enterKey(request, response) {
-    tv.request('ssap://com.webos.service.ime/sendEnterKey');
+function enterKey() {
+    return tv.request('ssap://com.webos.service.ime/sendEnterKey');
 }
 
-function enterText(request, response) {
-    var text = request.params.text;
-    tv.request('ssap://com.webos.service.ime/insertText', {text: text});
+function enterText(intent) {
+    var text = slotValue(intent, 'text');
+    return tv.request('ssap://com.webos.service.ime/insertText', {text: text});
 }
 
-function clearText(request, response) {
+function clearText() {
     for (var i=0; i < 100; i++) {
         tv.request('ssap://com.webos.service.ime/deleteCharacters', {count: 1});
     }
